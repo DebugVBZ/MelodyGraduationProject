@@ -21,6 +21,7 @@ class ImageProcessUI(QWidget):
         super().__init__()
         self.initUI()
         self.srcImageCv = ""
+        self.dstImageCv = ""
         self.gaussBlurVal = 1
     def initUI(self):
         self.algorithm=''
@@ -31,6 +32,7 @@ class ImageProcessUI(QWidget):
 
         self.languagelCombo=QComboBox(self,minimumWidth=200) # 语言下拉框
         self.picture = None
+    
 
         # 模糊算法选择器 初始化
         self.languagelCombo.addItem('高斯模糊')
@@ -44,7 +46,6 @@ class ImageProcessUI(QWidget):
 
         #参数文本输入框输入
         self.configTestInput = QLineEdit("模糊参数")
-        self.configTestConfirmBtn = QPushButton("确定参数")
         self.configSlider = QSlider(Qt.Horizontal)
         self.configSlider.setMaximum(100)
         self.configSlider.setMinimum(1)
@@ -80,7 +81,6 @@ class ImageProcessUI(QWidget):
         #初始化参数配置布局
         configLayout = QVBoxLayout()
         configLayout.addWidget(self.configTestInput)
-        configLayout.addWidget(self.configTestConfirmBtn)
         configLayout.addWidget(self.configSlider)
         sumVboxLayout.addLayout(configLayout)
 
@@ -94,7 +94,6 @@ class ImageProcessUI(QWidget):
 
         self.setLayout(sumVboxLayout)
     def clearButtonFunc(self):
-        
         self.imageBlurringBtn.setEnabled(False)
         self.imageSavingBtn.setEnabled(False)
         self.srcImageLabel.setPixmap(QPixmap())
@@ -105,6 +104,8 @@ class ImageProcessUI(QWidget):
         print("load--file")
         fname, _ = QFileDialog.getOpenFileName(self, '选择图片', './', 'Image files(*.jpg *.gif *.png)')
         self.srcImageCV = cv2.imread(fname)
+        if (self.srcImageCV is None):
+            return None
         srcImageCV2 = cv2.cvtColor(self.srcImageCV,cv2.COLOR_BGR2RGB)
         qImage = QImage(srcImageCV2[:],srcImageCV2.shape[1],srcImageCV2.shape[0],srcImageCV2.shape[1]*3,QImage.Format_RGB888)
         qpixmap = QPixmap(qImage)
@@ -124,6 +125,7 @@ class ImageProcessUI(QWidget):
         if self.srcImageCV is None:
             return
         img = self.blurring() #
+        self.dstImageCv = img
         srcImageCV2 = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         qImage = QImage(srcImageCV2[:],srcImageCV2.shape[1],srcImageCV2.shape[0],srcImageCV2.shape[1]*3,QImage.Format_RGB888)
         qpixmap = QPixmap(qImage)
@@ -134,16 +136,16 @@ class ImageProcessUI(QWidget):
         if (self.languagelCombo.currentText()=="高斯模糊"):
             return cv2.GaussianBlur(self.srcImageCV, (0, 0), self.gaussBlurVal)
         if (self.languagelCombo.currentText()=="均值滤波"):
-            return cv2.blur(self.srcImageCV,(5,5))
+            return cv2.blur(self.srcImageCV,(self.gaussBlurVal,self.gaussBlurVal))
         if (self.languagelCombo.currentText()=="双边滤波"):
-            return self.sp_noise(prob = 0.02)
+            return self.sp_noise(prob = self.gaussBlurVal/100)
         if (self.languagelCombo.currentText()=="2D卷积"):
-            return self.filter2D_demo(self.srcImageCV)
+            return self.filter2D_demo(self.srcImageCV,kernel = self.gaussBlurVal)
     def setVal(self):
         self.gaussBlurVal = self.configSlider.value()
-    def filter2D_demo(self,src):
+    def filter2D_demo(self,src,kernel):
 	# 除以 25 是防止溢出
-        kernel = np.ones([5,5],np.float32)/25
+        kernel = np.ones([kernel,kernel],np.float32)/25
         dst = cv2.filter2D(src,-1,kernel=kernel)
         return dst
 
