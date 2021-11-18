@@ -101,6 +101,7 @@ class ImageProcessUI(QWidget):
         self.dstImageLabel.setPixmap(QPixmap())
         self.imageBlurringBtn.setEnabled(False)
         self.imageSavingBtn.setEnabled(False)
+        self.imageClearBtn.setEnabled(False)
     def loadFile(self):
         print("load--file")
         fname, _ = QFileDialog.getOpenFileName(self, '选择图片', './', 'Image files(*.jpg *.gif *.png)')
@@ -112,7 +113,6 @@ class ImageProcessUI(QWidget):
         qpixmap = QPixmap(qImage)
         self.imageBlurringBtn.setEnabled(True)
         self.imageClearBtn.setEnabled(True)
-        self.imageSavingBtn.setEnabled(True)
         self.srcImageLabel.setPixmap(qpixmap)
     def saveFile(self):
         fileName = QFileDialog.getSaveFileName(self,'Save Image','./',"Image Files (*.jpg)")
@@ -135,6 +135,7 @@ class ImageProcessUI(QWidget):
         qImage = QImage(srcImageCV2[:],srcImageCV2.shape[1],srcImageCV2.shape[0],srcImageCV2.shape[1]*3,QImage.Format_RGB888)
         qpixmap = QPixmap(qImage)
         self.dstImageLabel.setPixmap(qpixmap)
+        self.imageSavingBtn.setEnabled(True)
     def blurring(self):
         if self.srcImageCV is None:
             return
