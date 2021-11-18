@@ -65,6 +65,7 @@ class ImageProcessUI(QWidget):
         #模糊图片保存按钮
         self.imageSavingBtn = QPushButton("图片保存")
         self.imageSavingBtn.setEnabled(False)
+        self.imageSavingBtn.clicked.connect(self.saveFile)
 
         #初始化GUI布局
         sumVboxLayout = QVBoxLayout()
@@ -113,6 +114,10 @@ class ImageProcessUI(QWidget):
         self.imageClearBtn.setEnabled(True)
         self.imageSavingBtn.setEnabled(True)
         self.srcImageLabel.setPixmap(qpixmap)
+    def saveFile(self):
+        fileName = QFileDialog.getSaveFileName(self,'Save Image','./',"Image Files (*.jpg)")
+        with open(fileName[0],'w') as f:
+            cv2.imwrite(fileName[0],self.dstImageCv)
     def convertQImage2CvMap(self,srcImage):
         srcImage = srcImage.converToFormat(QImage.Format.Format_RGBA8888)
         width = srcImage.width()
